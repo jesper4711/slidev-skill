@@ -1,6 +1,6 @@
 # Slidev Skill for Claude Code
 
-A Claude Code skill that generates beautiful presentations using [Slidev](https://sli.dev) - the presentation tool for developers.
+A Claude Code skill that generates presentations using [Slidev](https://sli.dev) - the presentation tool for developers.
 
 ## What This Does
 
@@ -15,7 +15,7 @@ When you ask Claude to create a presentation, this skill enables it to:
 
 ## Installation
 
-Copy `SKILL.md` to your Claude Code skills directory:
+Copy `SKILL.md` to your Claude Code skills directory (you can also put it in a specific project):
 
 ```bash
 # macOS/Linux
