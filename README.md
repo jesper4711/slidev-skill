@@ -8,10 +8,11 @@ When you ask Claude to create a presentation, this skill enables it to:
 
 - Generate properly structured Slidev projects (slides.md + package.json)
 - Use native Slidev features: themes, layouts, animations
-- Create Mermaid diagrams for architecture and flowcharts
+- Create Mermaid diagrams sized correctly for slides (avoiding overflow!)
 - Apply UnoCSS/Tailwind styling
-- Handle images (local, Unsplash, Iconify icons)
-- Avoid common pitfalls (overflow, missing dependencies)
+- Handle images (local, Unsplash, AI-generated if MCP available)
+- Use proper layouts for background images (`layout: cover`)
+- Avoid common pitfalls (diagram overflow, missing dependencies)
 
 ## Installation
 
@@ -49,7 +50,7 @@ npm install && npm run dev
 
 The skill generates presentations with:
 
-- **Themes**: Professional styling out of the box (seriph, default, apple-basic)
+- **Themes**: Professional styling out of the box (dracula default, seriph, apple-basic)
 - **Layouts**: two-cols, image-right, center
 - **Animations**: v-click for progressive reveal
 - **Diagrams**: Mermaid flowcharts and sequence diagrams
@@ -72,12 +73,12 @@ Create a presentation about our new API:
 
 | Feature | Description |
 |---------|-------------|
-| Themes | seriph, default, apple-basic, bricks |
-| Layouts | two-cols, image-right, center, image |
+| Themes | dracula (default), seriph, default, apple-basic, bricks |
+| Layouts | two-cols, image-right, center, cover, image |
 | Animations | v-click, v-clicks, transitions |
-| Diagrams | Mermaid flowcharts, sequence diagrams |
-| Code | Line highlighting, magic-move |
-| Images | Local, Unsplash, Iconify icons |
+| Diagrams | Mermaid with sizing/overflow prevention |
+| Code | Line highlighting, syntax coloring |
+| Images | Local, Unsplash, Iconify, AI-generated (optional) |
 | Styling | UnoCSS/Tailwind classes |
 
 ## Why Slidev?
@@ -90,6 +91,16 @@ Compared to other approaches:
 | Marp | Simple, VS Code plugin | Limited layouts, no animations |
 | html2pptx | Native PowerPoint shapes | Complex, validation issues |
 | Google Slides API | Real slides | Complex auth, limited styling |
+
+## Key Learnings Built Into This Skill
+
+This skill was refined through real-world usage. Key lessons learned:
+
+- **Mermaid diagrams overflow easily** - Use TB (vertical) in two-cols layouts, LR (horizontal) for full-width slides
+- **Subgraphs are wide** - Never use subgraphs in two-cols layouts
+- **Background images need `layout: cover`** - Other layouts may ignore the `background:` property
+- **Always create package.json** - Slidev won't run without it
+- **Scale diagrams** - Use `{scale: 0.5}` to `{scale: 0.7}` for complex diagrams
 
 ## Contributing
 

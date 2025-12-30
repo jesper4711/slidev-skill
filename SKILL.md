@@ -51,21 +51,73 @@ presentation/
   },
   "dependencies": {
     "@slidev/cli": "^0.50.0",
-    "@slidev/theme-seriph": "^0.25.0"
+    "slidev-theme-dracula": "latest"
   }
 }
 ```
 
-### Available Themes
+### Theme Selection
 
-| Theme | Style | Use For |
-|-------|-------|---------|
-| `seriph` | Elegant, professional | Business, technical talks |
+**Default theme: `dracula`** - Dark with purple/cyan/green accents, great for tech content.
+
+Before creating the presentation, ask the user if they want a different theme. Offer these options:
+
+**Official Themes** (package: `@slidev/theme-{name}`):
+| Theme | Style | Best For |
+|-------|-------|----------|
 | `default` | Clean, minimal | General purpose |
-| `apple-basic` | Apple keynote style | Product launches |
-| `bricks` | Colorful, playful | Creative presentations |
+| `seriph` | Elegant serif typography | Business, professional |
+| `apple-basic` | Apple Keynote inspired | Product launches (white bg only) |
+| `bricks` | Colorful, playful blocks | Creative presentations |
+| `shibainu` | Modern, distinctive | Tech talks |
 
-Add theme to dependencies: `"@slidev/theme-{name}": "latest"`
+**Popular Community Themes** (package: `slidev-theme-{name}`):
+| Theme | Style | Best For |
+|-------|-------|----------|
+| `dracula` | Dark purple/cyan/green | Developer content, tech (DEFAULT) |
+| `academic` | Academic/university style | Research, education |
+| `purplin` | Purple professional | Corporate tech |
+
+To switch themes:
+1. Change package.json dependency to the theme package
+2. Change `theme:` in slides.md frontmatter
+3. Run `npm install` again
+
+### AI Image Generation (Optional)
+
+**Before creating the presentation, ask the user:**
+1. Which theme? (default: dracula)
+2. Do you want custom images for title/closing slides?
+
+**If user wants custom images:**
+
+Check if the `nano-banana` MCP is available. If available, use it to generate images:
+
+| Slide Type | Generate Image? | Why |
+|------------|-----------------|-----|
+| Title/Hero | **Yes** | Sets the visual tone, unique to topic |
+| Section dividers | **Optional** | Visual breaks between major sections |
+| Content slides | **No** | Text-heavy, don't need images |
+| Closing slide | **Yes** | Memorable ending, call-to-action |
+
+**Workflow with nano-banana MCP:**
+1. Create `public/` folder first
+2. Generate images with `generate_image_to_file`:
+   - Use `aspect_ratio: "16:9"` for slides
+   - Use `style_preset: "tech"` for tech content (or "corporate", "minimal")
+   - Save to `public/hero.png`, `public/closing.png`, etc.
+3. Reference in slides.md with `background: /hero.png`
+4. **IMPORTANT:** Use `layout: cover` for background images to display properly
+
+**Example prompts for image generation:**
+- Title: "Abstract visualization of [topic], dark purple and cyan, tech aesthetic"
+- Closing: "Glowing path toward bright horizon, hopeful mood, blue and gold tones"
+
+**Fallback if nano-banana MCP is not available:**
+- Use `background: https://cover.sli.dev` for abstract gradient backgrounds
+- Use Unsplash URLs: `background: https://images.unsplash.com/photo-xxx?w=1920`
+- Use solid color backgrounds with the theme's accent colors
+- Skip background images entirely - Slidev looks good without them
 
 ## Step 2: Create slides.md
 
@@ -73,7 +125,7 @@ Add theme to dependencies: `"@slidev/theme-{name}": "latest"`
 
 ```yaml
 ---
-theme: seriph
+theme: dracula
 background: https://cover.sli.dev
 title: Presentation Title
 class: text-center
@@ -145,7 +197,22 @@ class: text-center
 Centered content
 ```
 
-### `image` - Full background image
+### `cover` - Background image with content overlay
+```markdown
+---
+layout: cover
+background: /hero.png
+class: text-center
+---
+
+# Title over background
+
+Content here - background image visible behind
+```
+
+**IMPORTANT:** Use `layout: cover` when you want a `background:` image to display. Other layouts like `center` or `default` may ignore or override the background property depending on the theme.
+
+### `image` - Full background image (no content)
 ```markdown
 ---
 layout: image
@@ -186,23 +253,23 @@ image: https://example.com/bg.png
 
 ### Basic with Syntax Highlighting
 
-~~~markdown
-```python
+```markdown
+\`\`\`python
 def hello():
     print("Hello, world!")
+\`\`\`
 ```
-~~~
 
 ### Line Highlighting (Progressive)
 
-~~~markdown
-```python {all|2|3-4|all}
+```markdown
+\`\`\`python {all|2|3-4|all}
 @dataclass
 class Memory:
     content: str
     confidence: float
+\`\`\`
 ```
-~~~
 
 - `{all}` - highlight all
 - `{2}` - highlight line 2
@@ -211,71 +278,147 @@ class Memory:
 
 ### Line Numbers
 
-~~~markdown
-```python {lines:true}
+```markdown
+\`\`\`python {lines:true}
 code here
+\`\`\`
 ```
-~~~
 
 ## Mermaid Diagrams
 
-### Flowchart
+### CRITICAL: Slide Size Constraints
 
-~~~markdown
-```mermaid {scale: 0.8}
-flowchart TB
-    A[Start] --> B[Process]
-    B --> C{Decision}
-    C -->|Yes| D[Result 1]
-    C -->|No| E[Result 2]
+**Slidev slides are 16:9 aspect ratio (960×540 effective pixels).** Diagrams overflow easily!
 
-    style A fill:#1C2833,color:#fff
-    style B fill:#16A085,color:#fff
+**Golden Rules:**
+1. **Use LR (left-right) for pipelines** - horizontal fits 16:9 better than vertical
+2. **Max 4 nodes vertically** in TB flow before overflow
+3. **Max 6-7 nodes horizontally** in LR flow before overflow
+4. **Always use scale** - `{scale: 0.5}` to `{scale: 0.7}` for complex diagrams
+5. **Subgraphs add height** - avoid stacking subgraphs vertically
+6. **Short labels** - use abbreviations, 2-3 words max per node
+
+### Direction Selection Guide
+
+| Diagram Type | Direction | Why |
+|--------------|-----------|-----|
+| Full-width slide | **LR** | Horizontal flows use wide 16:9 space well |
+| In `two-cols` layout | **TB** | Columns are ~50% width, LR overflows! |
+| Hierarchy/tree | TB | Trees grow down naturally |
+| Simple 3-4 step | Either | Both fit fine |
+| Complex with subgraphs | **LR** | Subgraphs stack horizontally (full-width only) |
+
+**CRITICAL: Layout affects direction choice!**
+- Full-width slides (`default`, `center`): Use **LR** for pipelines
+- Half-width (`two-cols`, `image-right`): Use **TB** - columns are narrow!
+- **NEVER use subgraphs in two-cols** - they're too wide even with TB
+
+### Scaling
+
+**Always specify scale for diagrams with 4+ nodes:**
+
+```markdown
+\`\`\`mermaid {scale: 0.6, theme: 'dark'}
+flowchart LR
+    ...
+\`\`\`
 ```
-~~~
+
+| Complexity | Scale |
+|------------|-------|
+| Simple (3-4 nodes) | `0.8` or omit |
+| Medium (5-7 nodes) | `0.6` - `0.7` |
+| Complex (8+ nodes) | `0.5` - `0.6` |
+| With subgraphs | `0.5` - `0.6` |
+
+### Flowchart - Horizontal Pipeline (Recommended)
+
+```markdown
+\`\`\`mermaid {scale: 0.6, theme: 'dark'}
+flowchart LR
+    A[Input] --> B[Process] --> C[Validate] --> D{OK?}
+    D -->|Yes| E[Output]
+    D -->|No| F[Error]
+
+    style A fill:#4EC5D4,color:#000
+    style E fill:#16A085,color:#fff
+    style F fill:#E74C3C,color:#fff
+\`\`\`
+```
+
+### Flowchart - With Subgraphs (Horizontal Layout)
+
+**DO: Subgraphs side-by-side with LR**
+```markdown
+\`\`\`mermaid {scale: 0.55, theme: 'dark'}
+flowchart LR
+    subgraph In[Input]
+    A[Email] --> B[Queue]
+    end
+
+    subgraph Proc[Processing]
+    C[Extract] --> D[Match]
+    end
+
+    subgraph Out[Output]
+    E[API] --> F[Done]
+    end
+
+    B --> C
+    D --> E
+\`\`\`
+```
+
+**DON'T: Subgraphs stacked vertically with TB** (overflows!)
+```markdown
+%% This will overflow the slide!
+flowchart TB
+    subgraph Input
+    ...
+    end
+    subgraph Process  %% Adds more height
+    ...
+    end
+    subgraph Output   %% Even more height - overflow!
+    ...
+    end
+```
 
 ### Sequence Diagram
 
-~~~markdown
-```mermaid
+Sequence diagrams are naturally horizontal, but limit participants:
+
+```markdown
+\`\`\`mermaid {scale: 0.7}
 sequenceDiagram
     User->>API: Request
     API->>DB: Query
     DB-->>API: Results
     API-->>User: Response
-```
-~~~
-
-### Flowchart Directions
-
-- `TB` - Top to bottom (best for tall diagrams)
-- `LR` - Left to right (can overflow on wide flows!)
-- `BT` - Bottom to top
-- `RL` - Right to left
-
-### Preventing Overflow
-
-For wide LR flows (5+ nodes), use subgraphs to group nodes:
-
-```mermaid
-flowchart LR
-    subgraph Input
-    A[Step 1]
-    end
-
-    subgraph Process
-    B[Step 2] --> C[Step 3] --> D[Step 4]
-    end
-
-    subgraph Output
-    E[Step 5]
-    end
-
-    A --> B
-    D --> E
+\`\`\`
 ```
 
-Or use TB (top-to-bottom) for many sequential steps.
+**Max 4-5 participants** before horizontal overflow.
+
+### When Diagrams Don't Fit
+
+If a diagram is too complex for one slide:
+
+1. **Simplify** - Remove detail, show high-level flow
+2. **Split** - Overview slide + detail slide(s)
+3. **Use two-cols** - Diagram on one side, explanation on other
+4. **Smaller scale** - Go down to `{scale: 0.5}` if needed
+
+### Node Label Tips
+
+Keep labels short to save space:
+
+| Instead of | Use |
+|------------|-----|
+| `Invoice Extractor Service` | `Extractor` |
+| `Message Queue System` | `Queue` |
+| `Business Central API` | `ERP API` |
+| `Human Review Process` | `Review` |
 
 ## Styling with UnoCSS
 
@@ -474,11 +617,11 @@ transition: fade-out
 
 ::right::
 
-```mermaid {scale: 0.7}
+\`\`\`mermaid {scale: 0.7}
 flowchart TB
     A[Write Markdown] --> B[Preview Live]
     B --> C[Export PDF/PPTX]
-```
+\`\`\`
 
 <!--
 Talk about the developer experience here.
@@ -553,7 +696,7 @@ For every new presentation, create these two files:
   },
   "dependencies": {
     "@slidev/cli": "^0.50.0",
-    "@slidev/theme-seriph": "^0.25.0"
+    "slidev-theme-dracula": "latest"
   }
 }
 ```
@@ -561,7 +704,7 @@ For every new presentation, create these two files:
 **2. slides.md**
 ```markdown
 ---
-theme: seriph
+theme: dracula
 background: https://cover.sli.dev
 title: My Presentation
 class: text-center
