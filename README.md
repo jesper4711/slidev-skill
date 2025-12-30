@@ -10,7 +10,7 @@ When you ask Claude to create a presentation, this skill enables it to:
 - Use native Slidev features: themes, layouts, animations
 - Create Mermaid diagrams sized correctly for slides (avoiding overflow!)
 - Apply UnoCSS/Tailwind styling
-- Handle images (local, Unsplash, AI-generated if MCP available)
+- Handle images (local, Unsplash, or AI-generated via optional [nano-banana MCP](https://github.com/jesper4711/nano-banana-mcp))
 - Use proper layouts for background images (`layout: cover`)
 - Avoid common pitfalls (diagram overflow, missing dependencies)
 
@@ -91,6 +91,15 @@ Compared to other approaches:
 | Marp | Simple, VS Code plugin | Limited layouts, no animations |
 | html2pptx | Native PowerPoint shapes | Complex, validation issues |
 | Google Slides API | Real slides | Complex auth, limited styling |
+
+## Optional: AI Image Generation
+
+If you have the [nano-banana MCP](https://github.com/jesper4711/nano-banana-mcp) configured, Claude can generate custom AI images for your slides (title backgrounds, section dividers, etc.).
+
+Without the MCP, the skill falls back to:
+- `https://cover.sli.dev` - Abstract gradient backgrounds
+- Unsplash URLs - Stock photography
+- Solid colors - Theme-matched backgrounds
 
 ## Key Learnings Built Into This Skill
 
